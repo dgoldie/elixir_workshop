@@ -1,0 +1,2 @@
+defmodule KitchenSink do
+end

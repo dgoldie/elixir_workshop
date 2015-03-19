@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link type="text/css" rel="stylesheet" href="workshop.css" />
+    <style type="text/css">
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-container {
+        background-color: #7D7D7D;
+      }
+      .remark-slide-content {
+        background-color: #DFDFDF;
+      }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, top
+# Elixir Workshop
+### March 2015
+
+.logo.bottom[![Default-aligned image](elixir-logo.png)]
+
+---
+class: center, top
+### Doug Goldie
+.center.bottom[![Middle-aligned image](codcaul-logo-trans-black.png)]
+.bottom[##### doug@codecauldron.com]
+.bottom[##### github: dgoldie]
+???
+Notes for the _first_ slide!
+
+---
+
+# Elixir in Five Minutes
+
+### IEX - interactive shell and basic math
+```bash
+
+2.1.2 apollo:~/code/work/elixir
+$ iex
+Erlang/OTP 17 [erts-6.0] [source] [64-bit] [smp:8:8] [async-threads:10] 
+[hipe] [kernel-poll:false]
+
+Interactive Elixir (0.14.0) - press Ctrl+C to exit (type h() ENTER for 	help)
+	iex(1)>
+```
+---
+### basic math
+```bash
+
+	iex(1)> 1 + 2
+	3
+
+	iex(2)> 7 - 3
+	4
+
+	iex(3)> 4 * 5
+	20
+
+	iex(4)> 10 / 2
+	5.0
+
+	iex(5)> div(10, 2)
+	5
+
+	iex(6)> div 10, 2
+	5
+
+	iex(7)> rem 10, 3
+	1
+```
+---
+
+### binary, octal, hex values
+```bash
+	
+	iex(8)> 0b1011
+	11
+
+	iex(9)> 0777
+	511
+
+	iex(10)> 0x1F
+	31
+```
+
+---
+
+### :atoms, strings, char lists
+```bash
+
+	iex(13)> :atom
+	:atom
+
+	iex(14)> "string"
+	"string"
+
+	iex(15)> 'char'
+	'char'
+
+	iex(16)> is_list 'char'
+	true
+
+	iex(17)> is_binary "string"
+	true
+```
+---
+
+### booleans
+
+```bash
+
+	iex(28)> true
+	true
+
+	iex(29)> false
+	false
+
+	iex(30)> is_boolean(true)
+	true
+
+	iex(31)> is_boolean(false)
+	true
+```
+
+everthing is truthy except `false` and `nil`
+---
+
+### lists
+```bash
+	
+	iex(18)> [1,2,3]
+	[1, 2, 3]
+
+	iex(38)> [:foo, :bar]
+	[:foo, :bar]
+
+	iex(34)> list = [1, 2, 3]
+	[1, 2, 3]
+
+	iex(35)> hd list
+	1
+
+	iex(36)> hd(list)  
+	1
+
+	iex(37)> tl list
+	[2, 3]
+```
+
+---
+
+### tuples
+```bash
+
+	iex(19)> {:a, :b, :c}
+	{:a, :b, :c}
+
+	iex(20)> {:person, "doug", "goldie"}
+	{:person, "doug", "goldie"}
+
+```
+---
+### keyword lists
+
+```bash
+
+	iex(40)> [author: "Doug", title: "Elixir Intro"]
+	[author: "Doug", title: "Elixir Intro"]
+	
+```
+
+* They keep the keys ordered as given by the developer.
+* They allow a key to be given more than once.
+* you can pattern match
+
+???
+
+They keep the keys ordered as given by the developer.
+They allow a key to be given more than once.
+you can pattern match
+
+---
+
+### maps
+```bash
+
+	iex(15)> map = %{:a => 1, 2 => :b} 
+	%{2 => :b, :a => 1}
+
+	iex(16)> map[:a]
+	1
+
+	iex(17)> map[2] 
+	:b
+```
+
+* Maps allow any value as key.
+* Map keys do not follow any ordering.
+
+---
+### pattern matching
+```bash
+
+	iex(18)> [a, b, c] = [1, 2, 3]
+	[1, 2, 3]
+
+	iex(19)> a
+	1
+
+	iex(20)> b
+	2
+
+	iex(21)> c
+	3
+
+	iex(25)> [d,_, 4] = [1,2,3]
+    ** (MatchError) no match of right hand side value: [1, 2, 3]
+```
+---
+
+### Sigils
+
+Perl Compatible regexes
+```bash
+
+  iex(1)> regex = ~r/doug|dan/
+	~r/doug|dan/
+
+	iex(2)> "doug" =~ regex
+	true
+
+	iex(3)> "dan" =~ regex 
+	true
+
+	iex(6)> "xyz" =~ regex   
+	false
+
+	iex(7)> "Doug" =~ regex
+	false
+```
+
+```bash
+	
+	iex(1)> Regex.replace ~r/[aeiou]/, "Beginning Elixir", "z"
+	"Bzgznnzng Elzxzr"
+
+	iex(2)> Regex.match?(~r/foo/, "foo")
+	true
+```
+
+???
+Sigils are one of the mechanisms for working with textual representations
+The most common sigil is `~r` used regular expressions
+
+---
+### Sigils - strings, char list and word list
+```bash
+
+iex(3)> ~s(This is a long sentence.)
+"This is a long sentence."
+
+iex(4)> ~c(This is a char list.)
+'This is a char list.'
+
+iex(5)> ~w(This is a word list)
+["This", "is", "a", "word", "list"]
+
+```
+---
+### Libraries
+Elixir and Erlang libraries
+```bash
+	iex(39)> IO.puts "helo"
+	helo
+	:ok
+	iex(40)> :io.format("hello")
+	hello:ok
+	iex(41)> 
+```
+
+Enum
+```bash
+	iex(41)> list = [1,2,3,4]
+	[1, 2, 3, 4]
+	iex(42)> Enum.take(list, 2)
+	[1, 2]	
+	iex(43)> Enum.map(list, fn(x) -> x * 2 end)
+	[2, 4, 6, 8]
+```
+---
+### Functions
+
+anonymous
+```bash
+	iex(33)> add = fn a,b -> a + b end 
+	#Function<12.106461118/2 in :erl_eval.expr/5>
+
+	iex(34)> add.(1,2)
+	3
+```
+closures	
+```bash
+	iex(35)> add_two = fn a -> add.(a, 2) end
+	#Function<6.106461118/1 in :erl_eval.expr/5>
+
+	iex(36)> add_two.(4)
+	6
+```
+
+---
+### Functions - capture operator	
+```bash
+	iex(49)> double = &(&1 * 2)
+	#Function<6.106461118/1 in :erl_eval.expr/5>
+  
+	iex(50)> double.(4)
+	8
+
+	iex(51)> fun = &is_atom(&1)
+	&:erlang.is_atom/1
+
+	iex(52)> fun.(:atom)
+	true
+  
+```
+---
+### Conditionals
+case
+```bash
+	
+	iex(3)> x = 1
+	1
+	iex(4)> case 10 do
+	...(4)>   ^x -> "is ten"
+	...(4)>   _  -> "is anything"
+	...(4)> end
+	"is anything"
+	iex(5)> 
+	
+```
+cond for different conditions
+```bash
+	iex(5)> cond do
+	...(5)>   1 == 5 -> "nope"
+	...(5)>   3 == 3 -> "yep"
+	...(5)> end
+	"yep"
+```
+---
+
+
+
+# Introduction
+Code:
+
+```elixir
+
+def serve_drinks(%User{age: age}) when age >= 21 do
+  # Code that serves drinks!
+end
+
+serve_drinks User.get("John Doe")
+#=> Fails if the user is under 21
+
+```
+
+Code:
+
+```elixir
+
+spawn_link(fn ->
+  send parent, {:msg, "hello world"}
+end)
+
+# Block until the message is received
+receive do
+  {:msg, contents} -> IO.puts contents
+end
+```
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create({
+  highlightLanguage: 'elixir',
+  highlightStyle: 'tomorrow-night-blue'
+});
+    </script>
+  </body>
+</html>
