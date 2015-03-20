@@ -19,7 +19,7 @@
         background-color: #7D7D7D;
       }
       .remark-slide-content {
-        background-color: #DFDFDF;
+        <!-- background-color: #DFDFDF; -->
       }
 
     </style>
@@ -43,10 +43,40 @@ class: center, top
 Notes for the _first_ slide!
 
 ---
+# Keys to Elixir
+
+###* Modern syntax
+###* Dynamic, Functional Language
+###* Immutable Data
+###* Leverages Erlang VM
+
+---
+
+# Hello World for Elixir
+```elixir
+
+defmodule Parallel do
+
+  def pmap(collection, func) do
+    collection
+    |> Enum.map(&(Task.async(fn -> func.(&1) end))) 
+    |> Enum.map(&Task.await/1)
+  end
+
+end
+```
+--
+what is a map function?
+
+---
+class: center, middle, section
+# Basic types and operators
+
+---
 
 # Elixir in Five Minutes
 
-### IEX - interactive shell and basic math
+### IEX - interactive shell
 ```bash
 
 2.1.2 apollo:~/code/work/elixir
@@ -84,6 +114,7 @@ Interactive Elixir (0.14.0) - press Ctrl+C to exit (type h() ENTER for 	help)
 ```
 ---
 
+
 ### binary, octal, hex values
 ```bash
 	
@@ -98,27 +129,6 @@ Interactive Elixir (0.14.0) - press Ctrl+C to exit (type h() ENTER for 	help)
 ```
 
 ---
-
-### :atoms, strings, char lists
-```bash
-
-	iex(13)> :atom
-	:atom
-
-	iex(14)> "string"
-	"string"
-
-	iex(15)> 'char'
-	'char'
-
-	iex(16)> is_list 'char'
-	true
-
-	iex(17)> is_binary "string"
-	true
-```
----
-
 ### booleans
 
 ```bash
@@ -139,6 +149,57 @@ Interactive Elixir (0.14.0) - press Ctrl+C to exit (type h() ENTER for 	help)
 everthing is truthy except `false` and `nil`
 ---
 
+
+
+
+### Atoms
+```bash
+
+	iex(13)> :atom
+	:atom
+
+	iex(14)> :hello == :world
+	false
+```
+
+```bash
+
+	iex(13)> true == :true
+	true
+
+	iex(14)> is_atom(false)
+	true
+
+	iex(14)> is_boolean(:false)
+	true
+```
+Booleans `true` and `false` are in fact `atoms`
+
+---
+### Strings
+```bash
+
+	"iex(14)> "hello #{:world}"
+	"hello world"
+
+	iex(15)> "hello\nworld"
+	"hello\nworld"
+
+	iex(17)> is_binary "string"
+	true
+```
+
+```bash
+
+	"iex(14)> String.length("hello")
+	5
+
+	iex(15)> String.upcase "hello"
+	"HELLO"
+```
+---
+
+
 ### lists
 ```bash
 	
@@ -147,6 +208,9 @@ everthing is truthy except `false` and `nil`
 
 	iex(38)> [:foo, :bar]
 	[:foo, :bar]
+  
+	iex(36)> [1, 2, 3] ++ [4, 5, 6]
+	[1, 2, 3, 4, 5, 6]
 
 	iex(34)> list = [1, 2, 3]
 	[1, 2, 3]
@@ -160,7 +224,7 @@ everthing is truthy except `false` and `nil`
 	iex(37)> tl list
 	[2, 3]
 ```
-
+Lists are stored in memory as linked lists.
 ---
 
 ### tuples
@@ -172,8 +236,139 @@ everthing is truthy except `false` and `nil`
 	iex(20)> {:person, "doug", "goldie"}
 	{:person, "doug", "goldie"}
 
+	iex> {:ok, "hello"}
+	{:ok, "hello"}
+
+	iex> elem(tuple, 1)
+	"hello"
+
+	iex> {:error, "bad argument"}
+	{:error, "bad argument"}
+
+```
+Tuples store elements contiguously in memory.
+---
+
+# Operators
+
+```bash
+
+	iex(40)> [1,2,3] ++ [4,5,6]
+	[1,2,3,4,5,6]
+	
+	iex(40)> [1,2,3] -- [2]
+	[1,3]
+```
+Elixir provides ++ and -- to manipulate lists
+
+```bash
+
+	iex(40)> "hello" <> "world"
+	"helloworld"
+	
+	iex(40)> [1,2,3] -- [2]
+	[1,3]
+```
+String concatenation is done with <>
+
+---
+# comparison operators
+
+```bash
+
+	iex> true and true
+	true
+
+	iex> false or is_atom(:example)
+	true
+```
+The three boolean operators: `or`, `and` and `not` are strict.
+
+```bash
+
+	iex> false and error("This error will never be raised")
+	false
+
+	iex> true or error("This error will never be raised")
+  true
+```
+`or` and `and` are short-circuit operators.
+
+There are also `||`, `&&` and `!` which accept arguments of any type.
+
+
+---
+
+class: center, middle, section
+# Pattern matching
+
+---
+# Match operator
+
+```bash
+
+	iex> x = 1 
+	1
+
+	iex> x
+	1
+```
+--
+```bash
+
+	iex> 1 = x
+	1
+```
+--
+```bash
+	iex> 2 = x
+```
+--
+```bash
+	iex> 2 = x
+	** (MatchError) no match of right hand side value: 1
+```
+
+---
+# Match tuples
+```bash
+	iex> {a, b, c} = {:hello, "world", 42}
+	{:hello, "world", 42}
+
+	iex> a
+```
+--
+```bash
+	:hello
+
+	iex> b
+
+```
+--
+```bash
+	"world"
+	
+```
+--
+```bash
+	iex> {:ok, result} = {:ok, 13}
+	{:ok, 13}
+```
+--
+```bash
+	iex> result
+	13
+
 ```
 ---
+
+# Matching lists
+
+
+
+---
+
+
 ### keyword lists
 
 ```bash
@@ -361,7 +556,6 @@ cond for different conditions
 	"yep"
 ```
 ---
-
 
 
 # Introduction

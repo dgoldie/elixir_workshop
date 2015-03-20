@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link type="text/css" rel="stylesheet" href="workshop.css" />
+    <style type="text/css">
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-container {
+        background-color: #7D7D7D;
+      }
+      .remark-slide-content {
+        <!-- background-color: #DFDFDF; -->
+      }
+
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, top
+# Elixir Workshop
+### March 2015
+
+#### OTP
+
+.logo.bottom[![Default-aligned image](elixir-logo.png)]
+
+---
+class: center, top
+### Doug Goldie
+.center.bottom[![Middle-aligned image](codcaul-logo-trans-black.png)]
+.bottom[##### doug@codecauldron.com]
+.bottom[##### github: dgoldie]
+???
+Notes for the _first_ slide!
+
+---
+# Actor Model
+
+
+
+
+---
+# Lifecycle of a Gen Server Process
+
+class: center, middle, bigger
+
+![Default-aligned image](lifecycle.png-large)
+
+---
+# The trouble with State
+actor
+ets
+___
+
+# Introduction
+Code:
+
+```elixir
+
+def serve_drinks(%User{age: age}) when age >= 21 do
+  # Code that serves drinks!
+end
+
+serve_drinks User.get("John Doe")
+#=> Fails if the user is under 21
+
+```
+
+Code:
+
+```elixir
+
+spawn_link(fn ->
+  send parent, {:msg, "hello world"}
+end)
+
+# Block until the message is received
+receive do
+  {:msg, contents} -> IO.puts contents
+end
+```
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create({
+  highlightLanguage: 'elixir',
+  highlightStyle: 'tomorrow-night-blue'
+});
+    </script>
+  </body>
+</html>
