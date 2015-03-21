@@ -667,8 +667,52 @@ defmodule Math do
 ```
 
 ---
+# Processes
+```bash
+	iex> spawn fn -> 1 + 2 end
+	#PID<0.43.0>
+```
+--
 
+```bash
+	iex> pid = spawn fn -> 1 + 2 end
+	#PID<0.44.0>
+	iex> Process.alive?(pid)
+	false
+```
+--
 
+```bash
+	iex> self()
+	#PID<0.41.0>
+	iex> Process.alive?(self())
+	true
+```
+---
+
+# `send` and `receive`
+```bash
+	iex> send self(), {:hello, "world"}
+	{:hello, "world"}
+
+	iex> receive do
+	...>   {:hello, msg} -> msg
+	...>   {:world, msg} -> "won't match"
+	...> end
+	"world"
+```
+--
+
+```bash
+	iex> send self(), :hello
+	:hello
+	iex> flush()
+	:hello
+	:ok
+```
+
+---
+	
 ### Sigils
 
 Perl Compatible regexes
