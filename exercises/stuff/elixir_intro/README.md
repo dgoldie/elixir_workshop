@@ -1,4 +1,0 @@
-ElixirIntro
-===========
-
-** TODO: Add description **

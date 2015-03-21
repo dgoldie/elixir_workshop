@@ -350,6 +350,37 @@ class: center, middle, section
 	
 ```
 --
+
+```bash
+	iex> {:ok, _} = {:ok, 5}
+	{:ok, 5}
+```
+
+---
+# But when things don't match ....
+--
+
+##### matching 3 elements with 2 elements
+```bash
+	iex> {a, b, c} = {:hello, "world"}
+```
+--
+```bash
+	** (MatchError) no match of right hand side value: {:hello, "world"}
+```
+--
+##### matching tuple and list
+```bash
+	iex> {a, b, c} = [:hello, "world", "!"]
+```
+--
+```bash
+	** (MatchError) no match of right hand side value: [:hello, "world", "!"]
+```
+
+---
+### Deconstruct complex structures 
+tuples
 ```bash
 	iex> {:ok, result} = {:ok, 13}
 	{:ok, 13}
@@ -360,16 +391,99 @@ class: center, middle, section
 	13
 
 ```
+--
+lists
+```bash
+
+	iex> [a, b, c] = [1, 2, 3]
+	[1, 2, 3]
+
+	iex> a
+	1
+```
 ---
 
 # Matching lists
 
+```bash
+	iex> [head | tail] = [1, 2, 3]
+	[1, 2, 3]
+```
+get head and tail with `cons` operator: `|`
 
+--
+```bash
+	iex> head
+```
+--
+```bash
+	1
+
+	iex> tail
+```
+--
+```bash
+	[2, 3]
+```
 
 ---
+# Rebind variables
 
+```bash
+	iex> x = 1
+	1
+  
+	iex> x = 2
+```
+--
+```bash
+	2
 
-### keyword lists
+```
+
+---
+# Pin operator: `^`
+In matching, you want to match against prior value of variable
+```bash
+	iex> x = 1
+	1
+	iex> ^x = 2
+	** (MatchError) no match of right hand side value: 2
+```
+--
+```bash
+	iex> {x, ^x} = {2, 1}
+	{2, 1}
+	iex> x
+	2
+
+```
+---
+
+### Conditionals
+case
+```bash
+	
+	iex(3)> x = 1
+	1
+	iex(4)> case 10 do
+	...(4)>   ^x -> "is ten"
+	...(4)>   _  -> "is anything"
+	...(4)> end
+	"is anything"
+	iex(5)> 
+	
+```
+cond for different conditions
+```bash
+	iex(5)> cond do
+	...(5)>   1 == 5 -> "nope"
+	...(5)>   3 == 3 -> "yep"
+	...(5)> end
+	"yep"
+```
+---
+# keyword lists
 
 ```bash
 
@@ -405,77 +519,43 @@ you can pattern match
 
 * Maps allow any value as key.
 * Map keys do not follow any ordering.
-
 ---
-### pattern matching
+
+# Modules
+
 ```bash
+	iex> String.length "hello"
+	5
+```
+--
+```bash
+	iex> defmodule Math do
+	...>   def sum(a, b) do
+	...>     a + b
+	...>   end
+	...> end
 
-	iex(18)> [a, b, c] = [1, 2, 3]
-	[1, 2, 3]
-
-	iex(19)> a
-	1
-
-	iex(20)> b
-	2
-
-	iex(21)> c
+	iex> Math.sum(1, 2)
 	3
-
-	iex(25)> [d,_, 4] = [1,2,3]
-    ** (MatchError) no match of right hand side value: [1, 2, 3]
 ```
 ---
-
-### Sigils
-
-Perl Compatible regexes
+# Compilation
+Assuming a file "math.ex", you can compile the file:
 ```bash
-
-  iex(1)> regex = ~r/doug|dan/
-	~r/doug|dan/
-
-	iex(2)> "doug" =~ regex
-	true
-
-	iex(3)> "dan" =~ regex 
-	true
-
-	iex(6)> "xyz" =~ regex   
-	false
-
-	iex(7)> "Doug" =~ regex
-	false
+	$ elixirc math.ex
 ```
+This will generate a file named `Elixir.Math.beam`
 
+--
+
+Now we can execute it from the shell:
 ```bash
-	
-	iex(1)> Regex.replace ~r/[aeiou]/, "Beginning Elixir", "z"
-	"Bzgznnzng Elzxzr"
-
-	iex(2)> Regex.match?(~r/foo/, "foo")
-	true
+	iex> Math.sum(1, 2)
+	3
 ```
-
-???
-Sigils are one of the mechanisms for working with textual representations
-The most common sigil is `~r` used regular expressions
 
 ---
-### Sigils - strings, char list and word list
-```bash
 
-iex(3)> ~s(This is a long sentence.)
-"This is a long sentence."
-
-iex(4)> ~c(This is a char list.)
-'This is a char list.'
-
-iex(5)> ~w(This is a word list)
-["This", "is", "a", "word", "list"]
-
-```
----
 ### Libraries
 Elixir and Erlang libraries
 ```bash
@@ -533,32 +613,112 @@ closures
   
 ```
 ---
-### Conditionals
-case
-```bash
+# Looping
+Functional languages rely on recursion to write loops.
+```elixir
+	defmodule Recursion do
+	  def print_multiple_times(msg, n) when n <= 1 do
+	    IO.puts msg
+	  end
 	
-	iex(3)> x = 1
-	1
-	iex(4)> case 10 do
-	...(4)>   ^x -> "is ten"
-	...(4)>   _  -> "is anything"
-	...(4)> end
-	"is anything"
-	iex(5)> 
+	  def print_multiple_times(msg, n) do
+	    IO.puts msg
+	    print_multiple_times(msg, n - 1)
+	  end
+	end
 	
+	Recursion.print_multiple_times("Hello!", 3)
+	# Hello!
+	# Hello!
+	# Hello!
 ```
-cond for different conditions
-```bash
-	iex(5)> cond do
-	...(5)>   1 == 5 -> "nope"
-	...(5)>   3 == 3 -> "yep"
-	...(5)> end
-	"yep"
+---
+# `Reduce` algorithm
+```elixir
+	defmodule Math do
+	  def sum_list([head|tail], accumulator) do
+	    sum_list(tail, head + accumulator)
+	  end
+	
+	  def sum_list([], accumulator) do
+	    accumulator
+	  end
+	end
+	
+	Math.sum_list([1, 2, 3], 0) #=> 6
+
 ```
+
+---
+
+# `Map` algorithm
+```elixir
+defmodule Math do
+	  def double_each([head|tail]) do
+	    [head * 2|double_each(tail)]
+	  end
+	
+	  def double_each([]) do
+	    []
+	  end
+	end
+	
+	Math.double_each([1, 2, 3]) #=> [2, 4, 6]
+```
+
 ---
 
 
-# Introduction
+### Sigils
+
+Perl Compatible regexes
+```bash
+
+  iex(1)> regex = ~r/doug|dan/
+	~r/doug|dan/
+
+	iex(2)> "doug" =~ regex
+	true
+
+	iex(3)> "dan" =~ regex 
+	true
+
+	iex(6)> "xyz" =~ regex   
+	false
+
+	iex(7)> "Doug" =~ regex
+	false
+```
+
+```bash
+	
+	iex(1)> Regex.replace ~r/[aeiou]/, "Beginning Elixir", "z"
+	"Bzgznnzng Elzxzr"
+
+	iex(2)> Regex.match?(~r/foo/, "foo")
+	true
+```
+
+???
+Sigils are one of the mechanisms for working with textual representations
+The most common sigil is `~r` used regular expressions
+
+---
+### Sigils - strings, char list and word list
+```bash
+
+iex(3)> ~s(This is a long sentence.)
+"This is a long sentence."
+
+iex(4)> ~c(This is a char list.)
+'This is a char list.'
+
+iex(5)> ~w(This is a word list)
+["This", "is", "a", "word", "list"]
+
+```
+---
+
 Code:
 
 ```elixir

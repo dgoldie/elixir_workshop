@@ -1,2 +1,0 @@
-defmodule KitchenSink do
-end
