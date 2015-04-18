@@ -29,18 +29,43 @@
 
 class: center, top
 # Elixir Workshop
-### March 2015
+### April 2015
 
-.logo.bottom[![Default-aligned image](elixir-logo.png)]
+.logo[![Default-aligned image](elixir-logo.png)]
 
 ---
-class: center, top
+.left-column[
+### Who am I?
+]
+.right-column[
 ### Doug Goldie
-.center.bottom[![Middle-aligned image](codcaul-logo-trans-black.png)]
-.bottom[##### doug@codecauldron.com]
-.bottom[##### github: dgoldie]
+* Originally from East Coast. Started as developer in Defense.
+After a few years left for small businesses
+
+* Came back to software in mid 90s
+
+* Came to Silicon Valley in 1999
+
+* Freelance web developer for the last 7 years
+-- mostly Rails; mostly startups
+
+* Did my own startup last year in Elixir.
+
+* Most Unique Fact: I have delivered 12 babies.
+]
+---
+class: center, middle
+.left-column[
+![Center-aligned image](codcaul-logo-trans-black.png)]
+]
+.right-column[
+#Doug Goldie
+
+####email: doug@codecauldron.com
+####github: dgoldie
+]
+
 ???
-Notes for the _first_ slide!
 
 ---
 # Keys to Elixir
@@ -427,6 +452,28 @@ get head and tail with `cons` operator: `|`
 ```
 
 ---
+class: center, middle, section
+# Conditionals
+---
+`case` statement
+```bash
+	
+	iex(7)> x = 9 
+	9
+	iex(10)> case x do                 
+	...(10)>   10 -> "is ten"          
+	...(10)>   _  -> "is something else"
+	...(10)> end
+	
+```
+--
+```bash
+	
+	"is something else"
+```
+Why didn't that work?
+
+---
 # Rebind variables
 
 ```bash
@@ -458,10 +505,9 @@ In matching, you want to match against prior value of variable
 	2
 
 ```
----
 
-### Conditionals
-case
+---
+# `case` statement
 ```bash
 	
 	iex(3)> x = 1
@@ -472,53 +518,36 @@ case
 	...(4)> end
 	"is anything"
 	iex(5)> 
-	
 ```
-cond for different conditions
-```bash
-	iex(5)> cond do
-	...(5)>   1 == 5 -> "nope"
-	...(5)>   3 == 3 -> "yep"
-	...(5)> end
-	"yep"
-```
----
-# keyword lists
-
-```bash
-
-	iex(40)> [author: "Doug", title: "Elixir Intro"]
-	[author: "Doug", title: "Elixir Intro"]
-	
-```
-
-* They keep the keys ordered as given by the developer.
-* They allow a key to be given more than once.
-* you can pattern match
-
-???
-
-They keep the keys ordered as given by the developer.
-They allow a key to be given more than once.
-you can pattern match
+`case` is for one condition.
 
 ---
-
-### maps
+# `cond` statement
 ```bash
-
-	iex(15)> map = %{:a => 1, 2 => :b} 
-	%{2 => :b, :a => 1}
-
-	iex(16)> map[:a]
-	1
-
-	iex(17)> map[2] 
+	iex(3)> a = 5
+	5
+	iex(4)> b = :b
 	:b
+	...(5)>   a == 1  -> "aaaa's have it"
+	...(5)>   b == :b -> "bbbb's are it"
+	...(5)> end
+	"bbbb's are it"
 ```
 
-* Maps allow any value as key.
-* Map keys do not follow any ordering.
+cond is for comparing different conditions
+---
+class: center, middle, section
+# Dictionaries
+---
+
+class: center, middle, exercises
+# Exercises
+
+---
+
+class: center, middle, section
+# Modules
+
 ---
 
 # Modules
@@ -553,33 +582,12 @@ Now we can execute it from the shell:
 	iex> Math.sum(1, 2)
 	3
 ```
-
 ---
-
-### Libraries
-Elixir and Erlang libraries
-```bash
-	iex(39)> IO.puts "helo"
-	helo
-	:ok
-	iex(40)> :io.format("hello")
-	hello:ok
-	iex(41)> 
-```
-
-Enum
-```bash
-	iex(41)> list = [1,2,3,4]
-	[1, 2, 3, 4]
-	iex(42)> Enum.take(list, 2)
-	[1, 2]	
-	iex(43)> Enum.map(list, fn(x) -> x * 2 end)
-	[2, 4, 6, 8]
-```
+class: center, middle, section
+# Functions
 ---
-### Functions
+# Anonymous Functions
 
-anonymous
 ```bash
 	iex(33)> add = fn a,b -> a + b end 
 	#Function<12.106461118/2 in :erl_eval.expr/5>
@@ -597,7 +605,8 @@ closures
 ```
 
 ---
-### Functions - capture operator	
+# Functions - capture operator
+
 ```bash
 	iex(49)> double = &(&1 * 2)
 	#Function<6.106461118/1 in :erl_eval.expr/5>
@@ -613,6 +622,89 @@ closures
   
 ```
 ---
+# One Function, multiple bodies
+
+```bash
+	iex(49)> handle_message = fn
+	iex(50)>   {:ok, msg}      -> IO.puts "#{msg}"
+	iex(50)>   {:error, error} -> IO.puts "error: #{error}"
+	iex(51)>   {_     , msg}   -> IO.puts "unknown msg type: #{msg}"
+	iex(51)> end
+	#Function<12.17052888 in :erl_eval.expr/5>
+	
+	iex(52)> handle_message.({:ok, "I'm good."})
+	"I'm good"
+```
+
+
+---
+# Parameterized Functions
+```bash
+
+	iex> add_n = fn n -> (fn other -> n + other end) end 
+	#Function<12.17052888 in :erl_eval.expr/5>
+	
+	iex> add_two = add_n.(2)
+	#Function<12.17052888 in :erl_eval.expr/5>
+	
+	iex> add_five = add_n.(5) 
+	#Function<12.17052888 in :erl_eval.expr/5>
+	
+	iex> add_two.(3)
+	5
+  	
+	iex> add_five.(7)
+	12
+```
+---
+# Guard clauses
+```elixir
+	defmodule Guard do
+	  def what_is(x) when is_number(x) do
+	    IO.puts "#{x} is a number"
+	  end
+	
+	  def what_is(x) when is_list(x) do 
+	    IO.puts "#{inspect(x)} is a list"
+	  end
+
+	  def what_is(x) when is_atom(x) do
+	    IO.puts "#{x} is an atom" 
+	  end
+	end
+```
+
+```elixir
+	Guard.what_is(99)
+	Guard.what_is(:cat)
+	Guard.what_is([1,2,3])
+
+	# => 99 is a number
+	# => cat is an atom
+	# => [1,2,3] is a list
+```
+
+---
+# List Comprehension
+
+
+```bash
+
+	iex> for x <- [ 1, 2, 3, 4, 5 ], do: x * x
+	[1, 4, 9, 16, 25]
+	  
+	iex> for x <- [ 1, 2, 3, 4, 5 ], x < 4, do: x * x 
+	[1, 4, 9]
+
+```
+
+You often map or filter collections
+
+---
+class: center, middle, section
+# Pattern Matching and Recursion
+---
+
 # Looping
 Functional languages rely on recursion to write loops.
 ```elixir
@@ -633,25 +725,23 @@ Functional languages rely on recursion to write loops.
 	# Hello!
 ```
 ---
-# `Reduce` algorithm
-```elixir
-	defmodule Math do
-	  def sum_list([head|tail], accumulator) do
-	    sum_list(tail, head + accumulator)
-	  end
-	
-	  def sum_list([], accumulator) do
-	    accumulator
-	  end
-	end
-	
-	Math.sum_list([1, 2, 3], 0) #=> 6
+## Example: `factorial`
+The factorial of a number is the product of an integer and all the integers below it;
 
+e.g., factorial four ( 4! ) is equal to 24 = 4 \* 3 \* 2 \* 1.
+--
+
+```elixir
+	defmodule Factorial do
+	  def of(0), do: 1
+	  def of(n), do: n * of(n-1)
+	end
 ```
 
 ---
 
 # `Map` algorithm
+
 ```elixir
 defmodule Math do
 	  def double_each([head|tail]) do
@@ -665,55 +755,171 @@ defmodule Math do
 	
 	Math.double_each([1, 2, 3]) #=> [2, 4, 6]
 ```
+---
+# `Reduce` algorithm
+```elixir
+	defmodule Math do
+	  def sum_list([head|tail], acc) do
+	    sum_list(tail, head + acc)
+	  end
+	
+	  def sum_list([], acc) do
+	    acc
+	  end
+	end
+	
+	Math.sum_list([1, 2, 3], 0) #=> 6
+
+```
+--
+####What's wrong with this?
+--
+
+####It does work....But why does this suck?
 
 ---
-# Processes
-```bash
-	iex> spawn fn -> 1 + 2 end
-	#PID<0.43.0>
+### Let's get rid of the zero!
+
+```elixir
+	defmodule MyList do
+	  def sum(list), do: _sum(list, 0)
+	  
+	  # private methods
+	  defp _sum([], total), do: total
+	  defp _sum([ head | tail ], total), do: _sum(tail, head+total) 
+	end
+
 ```
 --
+#### ...and with a different idiom
 
-```bash
-	iex> pid = spawn fn -> 1 + 2 end
-	#PID<0.44.0>
-	iex> Process.alive?(pid)
-	false
+```elixir
+	defmodule MyList do
+	  def sum(list), do: do_sum(list, 0)
+	  
+	  # private methods
+	  defp do_sum([], total), do: total
+	  defp do_sum([ head | tail ], total), do: do_sum(tail, head+total) 
+	end
+
 ```
---
+---
+
+class: center, middle, exercises
+# Exercises
+
+---
+class: center, middle, section
+# Dictionaries
+
+---
+# Dictionaries
+
+* Keyword List
+* HashDicts
+* Maps
+* Structs
+
+---
+# Keyword lists
 
 ```bash
-	iex> self()
-	#PID<0.41.0>
-	iex> Process.alive?(self())
+
+	iex> list = [{:a, 1}, {:b, 2}]
+	[a: 1, b: 2]
+	iex> list == [a: 1, b: 2]
 	true
+	iex> list[:a]
+	1	
+```
+* Keys must be atoms.
+* Keys are ordered, as specified by the developer.
+* Keys can be given more than once.
+
+There is a `Keyword` module.
+
+???
+In many functional programming languages, it is common to use a list of 2-item tuples
+as the representation of an associative data structure. 
+In Elixir, when we have a list of tuples and the first item of the tuple
+(i.e. the key) is an atom, we call it a keyword list.
+
+---
+# Maps
+```bash
+
+	iex(15)> map = %{:a => 1, 2 => :b} 
+	%{2 => :b, :a => 1}
+
+	iex(16)> map[:a]
+	1
+
+	iex(17)> map[2] 
+	:b
+```
+
+* Maps allow any value as key.
+* Map keys do not follow any ordering.
+
+There is a `Map` module.
+???
+Whenever you need a key-value store, maps are the "go to" data structure in Elixir. 
+---
+# HashDict
+
+---
+# Structs
+
+```bash
+	iex> defmodule User do
+	...>   defstruct name: "John", age: 27
+	...> end
+```
+--
+```bash
+	iex> %User{}
+	%User{age: 27, name: "John"}
+	iex> %User{name: "Meg"}
+	%User{age: 27, name: "Meg"}
 ```
 ---
 
-# `send` and `receive`
-```bash
-	iex> send self(), {:hello, "world"}
-	{:hello, "world"}
+class: center, middle, section
+# Libraries
 
-	iex> receive do
-	...>   {:hello, msg} -> msg
-	...>   {:world, msg} -> "won't match"
-	...> end
-	"world"
-```
---
+---
+# Elixir and Erlang libraries
 
 ```bash
-	iex> send self(), :hello
-	:hello
-	iex> flush()
-	:hello
+	iex(39)> IO.puts "helo"
+	helo
 	:ok
+	iex(40)> :io.format("hello")
+	hello:ok
+	iex(41)> 
 ```
+
+Enum
+```bash
+	iex(41)> list = [1,2,3,4]
+	[1, 2, 3, 4]
+	iex(42)> Enum.take(list, 2)
+	[1, 2]	
+	iex(43)> Enum.map(list, fn(x) -> x * 2 end)
+	[2, 4, 6, 8]
+```
+How can these libraries work with different kinds of collections?
+---
+# Protocols
+
+
+
+
+
 
 ---
 	
-### Sigils
+# Sigils
 
 Perl Compatible regexes
 ```bash
