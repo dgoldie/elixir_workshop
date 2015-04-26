@@ -1,0 +1,65 @@
+---
+
+Original function:
+
+```bash
+	iex(3)> msg = fn x ->                                           
+	...(3)>   :timer.sleep(2000)
+	...(3)>   "message  no. #{x}"
+	...(3)> end
+```
+
+####We've been executing this sequentially.
+How would we do this concurrently?
+--
+
+```bash
+	iex(10)> async_msg = fn x ->   
+```
+--
+
+```bash
+	...(10)>   spawn(fn -> IO.puts(msg.(x)) end)
+	...(10)> end
+	#Function<6.3831625/1 in :erl_eval.expr/5>
+  iex(11)>
+```
+---
+
+### So, doing it concurrently...
+
+```bash
+	iex(10)> async_msg = fn x ->   
+	...(10)>   spawn(fn -> IO.puts(msg.(x)) end)
+	...(10)> end
+	#Function<6.3831625/1 in :erl_eval.expr/5>
+	iex(11)> 
+	iex(17)> async_msg.(1)
+	#PID<0.102.0>
+	message  no. 1
+	iex(18)>self
+	#PID<0.66.0>
+	iex(19)>
+
+```
+---
+# The trouble with State
+actor
+ets
+___
+
+# Introduction
+Code:
+
+```elixir
+
+def serve_drinks(%User{age: age}) when age >= 21 do
+  # Code that serves drinks!
+end
+
+serve_drinks User.get("John Doe")
+#=> Fails if the user is under 21
+
+```
+
+

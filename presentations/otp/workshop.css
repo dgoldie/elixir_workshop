@@ -2,13 +2,34 @@
 /*   background-color: red; */
 /* } */
 
-
+  /* 240 × 316 */
 .logo img {
+  /* display: inline; */
+  /* float: right: */
   width:  200px;
   height: 200px;
 }
 
-.bigger img {
-  width: 100%;
-  height: 100%;
+
+.section {
+  background-color: #CCCCFF;
+}
+.exercises {
+  background-color: #CCFFCC;
+}
+
+/* Two-column layout */
+.left-column {
+  color: #777;
+  width: 20%;
+  height: 92%;
+  float: left;
+}
+.left-column h2:last-of-type, .left-column h3:last-child {
+  color: #000;
+}
+.right-column {
+  width: 75%;
+  float: right;
+  padding-top: 1em;
 }

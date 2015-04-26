@@ -24,7 +24,7 @@ defmodule Chain do
     # wait for the 'n' length propagation to complete back to 'self'
     receive do
       final_answer when is_integer(final_answer) ->
-        "Result is #{inspect(final_answer)}"
+        IO.puts "Result is #{inspect(final_answer)}"
     end
   end
  
@@ -37,3 +37,7 @@ end
  
 # spawning 10000 processes which each counts up one.
 Chain.run(10000)
+
+#
+# $ elixir --erl "+P 1000000" -r chain.ex -e "Chain.run(400_000)"
+# $ elixir --erl "+P 1000000" -r chain.ex -e "Chain.run(1_000_000)"

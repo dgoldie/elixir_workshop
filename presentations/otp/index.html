@@ -29,9 +29,10 @@
 
 class: center, top
 # Elixir Workshop
-### March 2015
+### April 2015
 
-#### OTP
+#### Elixir Workshop, Part 2
+#### Actor Model and OTP
 
 .logo.bottom[![Default-aligned image](elixir-logo.png)]
 
@@ -46,10 +47,126 @@ Notes for the _first_ slide!
 
 ---
 ---
+.left-column[
+### Who am I?
+]
+.right-column[
+### Doug Goldie
+* Originally from East Coast. Started as developer in Defense.
+After a few years left for small businesses
+
+* Came back to software in mid 90s
+
+* Came to Silicon Valley in 1999
+
+* Freelance web developer for the last 7 years
+-- mostly Rails; mostly startups
+
+* Did my own startup last year in Elixir.
+
+* Most Unique Fact: I have delivered 12 babies.
+]
+---
+class: center, middle
+.left-column[
+![Center-aligned image](codcaul-logo-trans-black.png)]
+]
+.right-column[
+#Doug Goldie
+
+####email: doug@codecauldron.com
+####github: dgoldie
+]
+
+???
+---
+# Keys to Elixir
+
+###* Modern syntax
+###* Dynamic, Functional Language
+###* Transform Data
+##* Leverages Erlang VM
+###* Domain Specific Languages (DSLs)
+
+---
+# Talk about...
+
+* Actor Model
+* Processes and Message passing
+* OTP
+* GenServer
+* Elixir Tasks
+* Elixir Agents
+* ExActor
+
+---
+
+# Erlang VM
+It's all about building highly available systems.
+
+###* Fault tolerance
+###* Scalability
+###* Distribution
+
+---
+## Fault tolerance
+--
+
+* Minimize, isolate, and recover from effects of runtime errors.
+---
+
+## Scalability
+--
+
+* Handle a load increase by adding more hardware resources without changing or redeploying the code.
+
+---
+## Distribution
+--
+
+* Cluster your system on multiple machines so that one can take over if another one crashes.
+
+
+---
+class: center, middle, section
+# Actor Model
+
+---
+background-image: url(actors.svg)
+# Actor Model
+
+
+---
+class: center, middle, section
 # Processes
+---
+# Erlang Process and Concurrency
+
+* A process is the unit of concurrency in the Erlang VM (BEAM)
+--
+
+* Concurrency plays an important role in achieving high availability.
+
+--
+
+Elixir processes are very lightweight objects...
+Not to be confused with an OS process!
+
+---
+background-image: url(processes.jpg)
+---
+# Spawn
 ```bash
 	iex> spawn fn -> 1 + 2 end
 	#PID<0.43.0>
+```
+--
+
+```bash
+	iex(4)> spawn fn -> IO.puts(1 + 2) end
+	3
+	#PID<0.73.0>
+	iex(5)> 
 ```
 --
 
@@ -62,45 +179,283 @@ Notes for the _first_ slide!
 --
 
 ```bash
-	iex> self()
+	iex> self
 	#PID<0.41.0>
 	iex> Process.alive?(self())
 	true
 ```
 ---
+Let's do more....
+#### Start with a function that prints after sleeping a little.
 
-# `send` and `receive`
 ```bash
-	iex> send self(), {:hello, "world"}
-	{:hello, "world"}
+	iex(3)> msg = fn x ->
+	...(3)>   :timer.sleep(2000)
+	...(3)>   "message  no. #{x}"
+	...(3)> end
+	#Function<6.3831625/1 in :erl_eval.expr/5>
+  	
+	iex(4)> msg.("1")
+```
+--
+```bash
+	"message  no. 1"
+	iex(6)> msg.(2)
+```
+--
+```bash
+	"message  no. 2"
+	iex(7)> msg.(3)
+```
+--
+```bash
+	"message  no. 3"
+	iex(8)> 
+```
+---
+Starting with the same function
 
+```bash
+	iex(3)> msg = fn x ->
+	...(3)>   :timer.sleep(2000)
+	...(3)>   "message  no. #{x}"
+	...(3)> end
+	#Function<6.3831625/1 in :erl_eval.expr/5>
+```
+
+Now if we spawn the function
+--
+
+```bash
+	iex(8)> spawn(fn -> IO.puts(msg.(1))end)
+```
+--
+```bash
+	#PID<0.81.0>
+```
+--
+```bash
+	message  no. 1
+	iex(9)> 
+```
+---
+Let's do more than one.
+
+```bash
+iex(9)> 1..5 |> Enum.map(&msg.(&1))
+```
+--
+
+```bash
+["message  no. 1", "message  no. 2", "message  no. 3", "message  no. 4",
+ "message  no. 5"]
+iex(10)> 
+```
+
+---
+# Message passing
+`send` and `receive`
+```bash
+	iex> send self, {:hello, "world"}
+	{:hello, "world"}
+```
+--
+
+```bash
 	iex> receive do
 	...>   {:hello, msg} -> msg
 	...>   {:world, msg} -> "won't match"
 	...> end
 	"world"
 ```
+---
+# Timeout with `after`
+
+```bash
+	iex> receive do
+	...>   {:hello, msg}  -> msg
+	...> after
+	...>   1_000 -> "nothing after 1s"
+	...> end
+	"nothing after 1s"
+```
+
+---
+# Flushing mailbox
+```bash
+	iex(33)> self
+	#PID<0.66.0>
+	iex(34)> send self, :hello
+	:hello
+	iex(35)> send self, :world
+	:world
+	iex(36)> send self, :foo
+	:foo
+	iex(37)> send self, :bar
+	:bar
+```
 --
 
 ```bash
-	iex> send self(), :hello
+	iex(38)> flush
 	:hello
-	iex> flush()
-	:hello
+	:world
+	:foo
+	:bar
+	:ok
+	iex(39)> 
+```
+---
+# Another example
+```elixir
+defmodule Basic do
+
+  def spawn_hello do
+    IO.puts "spawn_hello, #{inspect self}"
+    receive do
+      {sender, msg} ->
+        send sender, {:ok, "hello #{msg}" }
+    end
+  end
+end
+```
+--
+```bash
+	iex(2)> pid = spawn(Basic, :spawn_hello, [])
+	#PID<0.74.0>
+	iex(3)> send pid, {self, "World!"}
+	{#PID<0.66.0>, "World!"}
+	iex(4)> flush
+	{:ok, "hello World!"}
 	:ok
 ```
+---
+---
+## How do we create a receive loop?
+--
 
+```elixir
+defmodule Basic do
+
+  def spawn_hello do
+    IO.puts "spawn_hello, #{inspect self}"
+    receive do
+      {sender, msg} ->
+        send sender, {:ok, "hello #{msg}" }
+    end
+    spawn_hello
+  end
+end
+```
+---
+### Pingpong
+
+```elixir
+ponger = spawn(fn ->
+  receive do
+    { :ping, sender } ->
+      IO.puts "Received :ping, sending pong back to #{inspect sender}"
+      send sender, :pong
+  end
+end)
+
+IO.puts "sending ping to #{inspect ponger}"
+send ponger, { :ping, self() }
+
+receive do
+  :pong -> 
+    IO.puts "Got a pong back!"
+after
+  1_000 ->
+    IO.puts "One second passed and no pong :("
+end
+```
+--
+```bash
+iex(1)> c "pingpong.ex"
+```
+--
+```bash
+sending ping to #PID<0.71.0>
+Received :ping, sending pong back to #PID<0.68.0>
+Got a pong back!
+[]
+iex(2)> 
+```
 
 ---
-# Actor Model
+background-image: url(process_messages.jpg)
+# What is this architecture?
+--
+Client / Server
+---
 
-class: center, middle, bigger
+class: center, middle, exercises
+# Exercises
+---
+class: exercises
+# 1. Do the process examples in your iex shell.
 
-![Default-aligned image](le)
+# 2. Review and run chain.ex.
+
+# 3. Build a Calculator
+     Use spawn
+---
 
 
+class: exercises
+# 3. Calculator
+Build a calculator that works as follows:
+
+```bash
+	iex(1)> c "code/calculator.ex"
+	[Calculator]
+	iex(2)> calc = Calculator.start
+	#PID<0.74.0>
+	iex(3)> calc
+	#PID<0.74.0>
+	iex(4)> Calculator.add calc, 5
+	{:add, 5}
+	iex(5)> Calculator.add calc, 5
+	{:add, 5}
+	iex(6)> Calculator.value calc
+	10
+```
+--
+then build the other math functions:
+sub, mul, div
+---
+# Links
+
+```elixir
+  parent = self()
+	spawn_link(fn ->
+	  send parent, {:msg, "hello world"}
+	end)
+
+	# Block until the message is received
+	receive do
+	  {:msg, contents} -> IO.puts contents
+	end
+
+```
+There is also a `spawn_monitor`
+---
+class: exercises
+# spawn_link
+
+###4. Build a parallel map function `pmap`
+Note: use spawn_link
 
 ---
+class: center, middle, section
+# OTP
+---
+class: center, middle, section
+# GenServer
+---
+
+
 # Lifecycle of a Gen Server Process
 
 class: center, middle, bigger
@@ -108,38 +463,324 @@ class: center, middle, bigger
 ![Default-aligned image](lifecycle.png-large)
 
 ---
-# The trouble with State
-actor
-ets
-___
-
-# Introduction
-Code:
+# Build a stack with GenServer
 
 ```elixir
+defmodule Stack do
+  use GenServer
 
-def serve_drinks(%User{age: age}) when age >= 21 do
-  # Code that serves drinks!
+  def start_link(state) do
+    {:ok, pid} = GenServer.start_link(Stack, state, [])
+    pid
+  end
+
+```
+Note: there is also a `start` function
+
+---
+# Building the server implementation.
+What kind of operations does a Stack need?
+--
+
+* `pop`
+--
+
+```elixir
+	  def handle_call(:pop, _from, state) do
+	    [head|new_state] = state
+	
+	    {:reply, head, new_state}
+	  end
+```
+* `push`
+--
+
+```elixir
+	  def handle_cast({:push, value}, state) do
+	    {:noreply, [value|state]}
+	  end
+```
+---
+# Server implementation...
+
+```elixir
+  def handle_call(:pop, _from, []) do
+    {:reply, nil, []}
+  end
+
+  def handle_call(:pop, _from, state) do
+    [head|new_state] = state
+
+    {:reply, head, new_state}
+  end
+
+  def handle_cast({:push, value}, state) do
+    {:noreply, [value|state]}
+  end
+```
+How do we make these calls?
+--
+
+```elixir
+  GenServer.call(pid, :pop)
+  GenServer.cast(pid, {:push, value})
+```
+---
+# External API
+
+We want simpler client api..
+--
+```elixir
+  def pop(pid) do
+    GenServer.call(pid, :pop)
+  end
+
+  def push(pid, value) do
+    GenServer.cast(pid, {:push, value})
+  end
+```
+---
+```elixir
+defmodule Stack do
+  use GenServer
+
+  def start_link(state) do
+    {:ok, pid} = GenServer.start_link(Stack, state, [])
+    pid
+  end
+
+  def pop(pid) do
+    GenServer.call(pid, :pop)
+  end
+
+  def push(pid, value) do
+    GenServer.cast(pid, {:push, value})
+  end
+
+  def handle_call(:pop, _from, []) do
+    {:reply, nil, []}
+  end
+
+  def handle_call(:pop, _from, state) do
+    [head|new_state] = state
+
+    {:reply, head, new_state}
+  end
+
+  def handle_cast({:push, value}, state) do
+    {:noreply, [value|state]}
+  end
 end
+```
+---
+# `use GenServer`
 
-serve_drinks User.get("John Doe")
-#=> Fails if the user is under 21
+* init(start_arguments)
+* handle_call(request, from, state)
+* handle_cast(request, state)
+* handle_info(info, state)
+* terminate(reason, state)
+* code_change(from_version, state, extra)
+* format_status(reason, state)
+---
+
+class: center, middle, exercises
+# Exercises
+---
+class: exercises
+# 1. Write a sequence server.
+
+# 2. Write a queue server.
+
+# 3. Give your stack server a name.
+
+# 4. Implement the terminate callback in your stack server.
+
+---
+class: center, middle, section
+# Supervision Trees
+
+---
+background-image: url(sup6.gif)
+# Supervisors and Workers
+---
+# Supervisor Example
+
+```elixir
+defmodule KV.Supervisor do
+  use Supervisor
+
+  def start_link do
+    Supervisor.start_link(__MODULE__, :ok)
+  end
+
+  @manager_name KV.EventManager
+  @registry_name KV.Registry
+
+  def init(:ok) do
+    children = [
+      worker(GenEvent, [[name: @manager_name]]),
+      worker(KV.Registry, [@manager_name, [name: @registry_name]])
+    ]
+
+    supervise(children, strategy: :one_for_one)
+  end
+end
+```
+---
+# Supervisor callbacks
+
+* worker - provides the spec used to create workers.
+
+```elixir
+worker(MyWorker, args, options)
+supervisor(ChildSupervisor, args, options)
+
+#options example: restart: :temporary
+```
+
+---
+# Supervisor callbacks
+
+* supervise - provides the strategy used to restart workers.
+
+###Strategies
+
+* :one_for_one - just restart one child
+* :one_for_all - restarts all children
+
+* :simple_one_for_one
+* :rest_for_all
+
+---
+background-image: url(fig_10.png)
+---
+
+class: center, middle, exercises
+# Exercises
+---
+class: exercises
+# 1. Create an application with Supervisor for Stack Server.
+
+# 2. Try variations.
+
+---
+class: center, middle, section
+# Tasks and Agents
+
+---
+# Task
+```elixir
+task = Task.async(fn -> do_some_work() end)
+res  = do_some_other_work()
+res + Task.await(task)
 
 ```
 
-Code:
+???
+Tasks are processes meant to execute one particular action throughout their life-cycle,
+often with little or no communication with other processes. 
+The most common use case for tasks is to compute a value asynchronously:
+---
+### Example
 
 ```elixir
+defmodule Tasks do
 
-spawn_link(fn ->
-  send parent, {:msg, "hello world"}
-end)
+  def squared_numbers_list x do
+    1..x |> Enum.map( &(&1 * &1))
+  end
 
-# Block until the message is received
-receive do
-  {:msg, contents} -> IO.puts contents
+  IO.puts "start the task"
+  worker = Task.async(fn -> Tasks.squared_numbers_list(10) end)
+  IO.puts "do something else"
+
+  #...
+  IO.puts "wait for task"
+  result = Task.await(worker)
+
+  IO.puts "The result is #{inspect result}"
+
 end
 ```
+--
+
+```elixir
+start the task
+do something else
+wait for task
+The result is [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]
+[Tasks]
+iex(14)>
+
+```
+---
+# Task.Supervisor
+```elixir
+{:ok, pid} = Task.Supervisor.start_link()
+Task.Supervisor.async(pid, MyMod, :my_fun, [arg1, arg2, arg3])
+```
+--
+
+```elixir
+# In the remote node
+Task.Supervisor.start_link(name: :tasks_sup)
+
+# In the client
+Task.Supervisor.async({:tasks_sup, :remote@local}, MyMod, :my_fun, [arg1, arg2, arg3])
+```
+--
+```elixir
+import Supervisor.Spec
+
+children = [
+  supervisor(Task.Supervisor, [[name: :tasks_sup]])
+]
+```
+
+---
+# Agents
+---
+# Agents
+* The trouble with state
+
+---
+# simple example
+
+```bash
+iex(1)> {:ok, agent} = Agent.start_link fn -> [] end
+{:ok, #PID<0.68.0>}
+iex(2)> agent
+#PID<0.68.0>
+iex(3)> Agent.update(agent, fn list -> ["eggs"|list] end)
+:ok
+iex(4)> Agent.get(agent, fn list -> list end)
+["eggs"]
+iex(5)> Agent.stop(agent)
+:ok
+iex(6)> 
+```
+
+
+---
+# ExActor
+
+```elixir
+defmodule Espn.Calculator do
+  use ExActor.GenServer
+
+  defstart start_link, do: initial_state(0)
+
+  defcast inc(x), state: state, do: new_state(state + x)
+  defcast dec(x), state: state, do: new_state(state - x)
+
+  defcall get, state: state, do: reply(state)
+
+  defcast stop, do: stop_server(:normal)
+end
+```
+---
+
 
     </textarea>
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
