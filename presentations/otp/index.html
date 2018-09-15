@@ -9,10 +9,17 @@
       @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
       @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
-      body { font-family: 'Droid Serif'; }
+      body { font-family: 'Arial'; }
       h1, h2, h3 {
         font-family: 'Yanone Kaffeesatz';
         font-weight: normal;
+      }
+      ul,ol,dl,p {
+        font-size: 1.5rem;
+      }
+
+      li, p {
+        line-height: 1.5;
       }
       .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
       .remark-container {
@@ -21,6 +28,8 @@
       .remark-slide-content {
         <!-- background-color: #DFDFDF; -->
       }
+
+
 
     </style>
   </head>
@@ -45,7 +54,6 @@ class: center, top
 ???
 Notes for the _first_ slide!
 
----
 ---
 .left-column[
 ### Who am I?
@@ -133,6 +141,7 @@ class: center, middle, section
 
 ---
 background-image: url(actors.svg)
+background-size: 90% 60%
 # Actor Model
 
 
@@ -150,6 +159,9 @@ class: center, middle, section
 --
 
 Elixir processes are very lightweight objects...
+
+--
+
 Not to be confused with an OS process!
 
 ---
@@ -166,7 +178,7 @@ background-image: url(processes.jpg)
 	iex(4)> spawn fn -> IO.puts(1 + 2) end
 	3
 	#PID<0.73.0>
-	iex(5)> 
+	iex(5)>
 ```
 --
 
@@ -194,7 +206,7 @@ Let's do more....
 	...(3)>   "message  no. #{x}"
 	...(3)> end
 	#Function<6.3831625/1 in :erl_eval.expr/5>
-  	
+
 	iex(4)> msg.("1")
 ```
 --
@@ -210,7 +222,7 @@ Let's do more....
 --
 ```bash
 	"message  no. 3"
-	iex(8)> 
+	iex(8)>
 ```
 ---
 Starting with the same function
@@ -236,7 +248,7 @@ Now if we spawn the function
 --
 ```bash
 	message  no. 1
-	iex(9)> 
+	iex(9)>
 ```
 ---
 Let's do more than one.
@@ -249,7 +261,7 @@ iex(9)> 1..5 |> Enum.map(&msg.(&1))
 ```bash
 ["message  no. 1", "message  no. 2", "message  no. 3", "message  no. 4",
  "message  no. 5"]
-iex(10)> 
+iex(10)>
 ```
 
 ---
@@ -303,7 +315,7 @@ iex(10)>
 	:foo
 	:bar
 	:ok
-	iex(39)> 
+	iex(39)>
 ```
 ---
 # Another example
@@ -363,7 +375,7 @@ IO.puts "sending ping to #{inspect ponger}"
 send ponger, { :ping, self() }
 
 receive do
-  :pong -> 
+  :pong ->
     IO.puts "Got a pong back!"
 after
   1_000 ->
@@ -380,13 +392,15 @@ sending ping to #PID<0.71.0>
 Received :ping, sending pong back to #PID<0.68.0>
 Got a pong back!
 []
-iex(2)> 
+iex(2)>
 ```
 
 ---
 background-image: url(process_messages.jpg)
+background-size: 90% 60%
 # What is this architecture?
 --
+
 Client / Server
 ---
 
@@ -488,7 +502,7 @@ What kind of operations does a Stack need?
 ```elixir
 	  def handle_call(:pop, _from, state) do
 	    [head|new_state] = state
-	
+
 	    {:reply, head, new_state}
 	  end
 ```
@@ -679,7 +693,7 @@ res + Task.await(task)
 
 ???
 Tasks are processes meant to execute one particular action throughout their life-cycle,
-often with little or no communication with other processes. 
+often with little or no communication with other processes.
 The most common use case for tasks is to compute a value asynchronously:
 ---
 ### Example
@@ -741,8 +755,13 @@ children = [
 ---
 # Agents
 ---
-# Agents
-* The trouble with state
+# Maintaining State
+
+* Immutable data
+* Processes
+* ETS
+
+An Agent is a simple wrapper around State
 
 ---
 # simple example
@@ -758,9 +777,30 @@ iex(4)> Agent.get(agent, fn list -> list end)
 ["eggs"]
 iex(5)> Agent.stop(agent)
 :ok
-iex(6)> 
+iex(6)>
 ```
+---
+# Agent callbacks
 
+* get
+* update
+* get_and_update
+* delete
+* stop
+
+NOTE: beware of long-running server actions
+Wrap Agent in a Module
+
+---
+class: center, middle, exercises
+# Exercises
+
+---
+class: exercises
+
+#1. Convert Stack into a Agent.
+
+#2. Task
 
 ---
 # ExActor

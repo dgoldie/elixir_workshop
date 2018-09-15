@@ -9,8 +9,6 @@ defmodule Basic do
     receive do
       {sender, msg} ->
         send sender, {:ok, "hello #{msg}" }
-      {sender} ->
-        send sender, {:ok, "hello <anonymous>"}
     end
     spawn_hello
   end
